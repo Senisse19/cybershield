@@ -118,84 +118,6 @@ class Defender:
             print(f"Erro ao iniciar AnyDesk: {e}")
             return False
 
-    def show_fullscreen_lock(self, threat_source):
-        """Abre uma tela cheia vermelha de bloqueio com controle total de mouse e senha."""
-        if self.lock_window and self.lock_window.winfo_exists():
-            return
-            
-        def _lock_screen():
-            self.lock_window = tk.Tk()
-            self.lock_window.overrideredirect(True)
-            self.lock_window.attributes("-topmost", True)
-            self.lock_window.attributes("-fullscreen", True)
-            self.lock_window.configure(bg="#450a0a")
-            self.lock_window.protocol("WM_DELETE_WINDOW", lambda: None)
-            
-            screen_width = self.lock_window.winfo_screenwidth()
-            screen_height = self.lock_window.winfo_screenheight()
-            
-            container = tk.Frame(self.lock_window, bg="#450a0a")
-            container.pack(expand=True)
-            
-            title = tk.Label(
-                container, text="🔒 CYBERSHIELD - ACESSO BLOQUEADO 🔒", 
-                font=("Arial", 28, "bold"), fg="#f87171", bg="#450a0a"
-            )
-            title.pack(pady=20)
-            
-            desc = tk.Label(
-                container, 
-                text=f"Um acesso remoto via {threat_source} foi detectado e bloqueado por segurança.\n"
-                     f"A tela foi bloqueada para proteger suas informações confidenciais.",
-                font=("Arial", 16), fg="#fca5a5", bg="#450a0a"
-            )
-            desc.pack(pady=20)
-            
-            info = tk.Label(
-                container, 
-                text="Para desbloquear localmente:\n"
-                     "1. Use [TAB] para focar no campo abaixo.\n"
-                     "2. Digite a senha (1234) e aperte [ENTER].",
-                font=("Arial", 12), fg="#e7e5e4", bg="#450a0a"
-            )
-            info.pack(pady=10)
-            
-            pwd_frame = tk.Frame(container, bg="#450a0a")
-            pwd_frame.pack(pady=15)
-            
-            tk.Label(pwd_frame, text="Senha:", font=("Arial", 14), fg="white", bg="#450a0a").pack(side=tk.LEFT, padx=5)
-            pwd_entry = tk.Entry(pwd_frame, font=("Arial", 16), show="*", width=15, bg="#1c1917", fg="white", insertbackground="white")
-            pwd_entry.pack(side=tk.LEFT, padx=5)
-            pwd_entry.focus_set()
-            
-            error_lbl = tk.Label(container, text="", font=("Arial", 12, "bold"), fg="#f87171", bg="#450a0a")
-            error_lbl.pack(pady=10)
-            
-            def attempt_unlock(event=None):
-                if pwd_entry.get() == "1234":
-                    self.lock_window.destroy()
-                    self.lock_window = None
-                    self.speak("Acesso local liberado.")
-                    gc.collect()
-                else:
-                    error_lbl.config(text="Senha incorreta!")
-                    pwd_entry.delete(0, tk.END)
-                    
-            pwd_entry.bind("<Return>", attempt_unlock)
-            
-            def lock_mouse():
-                if self.lock_window and self.lock_window.winfo_exists():
-                    try:
-                        ctypes.windll.user32.SetCursorPos(screen_width // 2, screen_height // 2)
-                    except:
-                        pass
-                    self.lock_window.after(100, lock_mouse)
-                    
-            lock_mouse()
-            self.lock_window.mainloop()
-            
-        t = threading.Thread(target=_lock_screen, daemon=True)
-        t.start()
 
     def trigger_defense(self, threat_source, active_protection=False):
         """Aciona a defesa com base na ameaça."""
@@ -204,9 +126,6 @@ class Defender:
         
         self.play_alert_sound()
         # self.speak(f"Aviso! Acesso remoto via {threat_source} detectado.") # Desativado a pedido do usuário
-        
-        # Chama a tela de bloqueio vermelha em tela cheia!
-        self.show_fullscreen_lock(threat_source)
         
         if active_protection:
             if threat_source == "AnyDesk":
